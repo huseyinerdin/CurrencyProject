@@ -19,22 +19,20 @@ namespace CurrencyRateService
             while (!stoppingToken.IsCancellationRequested)
             {
                 var now = DateTime.Now;
-                if (now.Hour == 14 && now.Minute == 01)  // Her gün saat 19:00'da çalýþýr
+                if (now.Hour == 14 && now.Minute == 01)
                 {
                     string usdRate = await GetCurrencyRateAsync();
-                    string emailBody = $"Bugünün USD Alýþ Kuru: {usdRate}";
+                    string emailBody = $"BugÃ¼nÃ¼n USD AlÄ±ÅŸ Kuru: {usdRate}";
 
                     _logger.Log(LogLevel.Information, "mail send");
                     SendEmail(emailBody);
 
-                    // Gün içerisinde tekrar mail atmasýný engellemek için 24 saat bekle
                     await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
                 }
                 else
                 {
 
                     _logger.Log(LogLevel.Information, "test");
-                    // Zaman henüz gelmediyse 1 dakikada bir kontrol eder
                     await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 }
             }
@@ -45,7 +43,6 @@ namespace CurrencyRateService
             using HttpClient client = new HttpClient();
             var response = await client.GetStringAsync(url);
 
-            // XML’i yükleyip döviz kurunu çekiyoruz
             XDocument xmlDoc = XDocument.Parse(response);
             var usdRate = xmlDoc.Descendants("Currency")
                                 .FirstOrDefault(c => c.Attribute("Kod")?.Value == "USD")?
@@ -65,7 +62,7 @@ namespace CurrencyRateService
             var mailMessage = new MailMessage
             {
                 From = new MailAddress(_emailSettings.SenderEmail),
-                Subject = "Günlük Dolar Kuru",
+                Subject = "GÃ¼nlÃ¼k Dolar Kuru",
                 Body = body,
                 IsBodyHtml = true,
             };
